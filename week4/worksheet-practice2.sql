@@ -51,5 +51,5 @@ CROSS JOIN dev.raw.alert a;
 
 -- SELF JOIN
 SELECT *
-FROM dev.raw_data.vital v1
-LEFT JOIN dev.raw_data.vital v2 ON v1.vitalid = v2.vitalid;
+FROM dev.raw.vital v1
+LEFT JOIN dev.raw.vital v2 ON v1.vitalid = v2.vitalid;
