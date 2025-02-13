@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS dev;
 
 CREATE SCHEMA IF NOT EXISTS dev.adhoc;
-CREATE SCHEMA IF NOT EXISTS dev.raw_data;
+CREATE SCHEMA IF NOT EXISTS dev.raw;
 CREATE SCHEMA IF NOT EXISTS dev.analytics;
 
 CREATE OR REPLACE TABLE dev.adhoc.count_test (
@@ -63,40 +63,40 @@ WHERE value is NULL; -- WHERE value is not NULL
 SELECT 0 + NULL, 0 - NULL, 0 * NULL, 0/NULL;
 
 -- GROUP BY PREP
-CREATE TABLE IF NOT EXISTS dev.raw_data.user_session_channel (
+CREATE TABLE IF NOT EXISTS dev.raw.user_session_channel (
     userId int not NULL,
     sessionId varchar(32) primary key,
     channel varchar(32) default 'direct'  
 );
 
-CREATE TABLE IF NOT EXISTS dev.raw_data.session_timestamp (
+CREATE TABLE IF NOT EXISTS dev.raw.session_timestamp (
     sessionId varchar(32) primary key,
     ts timestamp  
 );
 
 -- for the following query to run, 
 -- the S3 bucket should have LIST/READ privileges for everyone
-CREATE OR REPLACE STAGE dev.raw_data.blob_stage
+CREATE OR REPLACE STAGE dev.raw.blob_stage
 url = 's3://s3-geospatial/readonly/'
 file_format = (type = csv, skip_header = 1, field_optionally_enclosed_by = '"');
 
-COPY INTO dev.raw_data.user_session_channel
-FROM @dev.raw_data.blob_stage/user_session_channel.csv;
+COPY INTO dev.raw.user_session_channel
+FROM @dev.raw.blob_stage/user_session_channel.csv;
 
-COPY INTO dev.raw_data.session_timestamp
-FROM @dev.raw_data.blob_stage/session_timestamp.csv;
+COPY INTO dev.raw.session_timestamp
+FROM @dev.raw.blob_stage/session_timestamp.csv;
 
 SELECT *
-FROM dev.raw_data.session_timestamp
+FROM dev.raw.session_timestamp
 LIMIT 10;
 
 -- GROUP BY 
 SELECT channel, COUNT(1) AS cnt
-FROM dev.raw_data.user_session_channel
+FROM dev.raw.user_session_channel
 GROUP BY channel
 ORDER BY cnt DESC;
 
 SELECT channel, COUNT(1) AS cnt
-FROM dev.raw_data.user_session_channel
+FROM dev.raw.user_session_channel
 GROUP BY 1
 ORDER BY 2 DESC;
