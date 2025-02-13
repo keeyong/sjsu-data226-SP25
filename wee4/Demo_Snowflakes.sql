@@ -1,102 +1,101 @@
-CREATE DATABASE IF NOT EXISTS dev;
+DROP DATABASE IF EXISTS DEMO_DB;
 
-CREATE SCHEMA IF NOT EXISTS dev.adhoc;
-CREATE SCHEMA IF NOT EXISTS dev.raw_data;
-CREATE SCHEMA IF NOT EXISTS dev.analytics;
+CREATE or REPLACE DATABASE DEMO_DB;
 
-CREATE OR REPLACE TABLE dev.adhoc.count_test (
-    value int
-);
+CREATE SCHEMA raw_data;
 
-ALTER TABLE dev.adhoc.count_test RENAME COLUMN value to v;
+CREATE STAGE stage_company_metadata
+	URL = 's3://sfquickstarts/zero_to_snowflake/cybersyn-consumer-company-metadata-csv/' 
+	DIRECTORY = ( ENABLE = true );
+    
+LIST @stage_company_metadata;
 
-INSERT INTO dev.adhoc.count_test VALUES 
-(NULL), (1), (1), (0), (0), (4), (3);
+CREATE OR REPLACE TABLE raw_data.company_metadata
+(cybersyn_company_id string,
+company_name string,
+permid_security_id string,
+primary_ticker string,
+security_name string,
+asset_class string,
+primary_exchange_code string,
+primary_exchange_name string,
+security_status string,
+global_tickers variant,
+exchange_code variant,
+permid_quote_id variant);
 
-SELECT *
-FROM dev.adhoc.count_test;
+CREATE OR REPLACE FILE FORMAT csv_company_metadata
+    TYPE = 'CSV'
+    COMPRESSION = 'AUTO'  
+    FIELD_DELIMITER = ',' 
+    RECORD_DELIMITER = '\n'  
+    SKIP_HEADER = 1  
+    FIELD_OPTIONALLY_ENCLOSED_BY = '\042'  
+    TRIM_SPACE = FALSE 
+    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE 
+    ESCAPE = 'NONE'  
+    ESCAPE_UNENCLOSED_FIELD = '\134'
+    DATE_FORMAT = 'AUTO' 
+    TIMESTAMP_FORMAT = 'AUTO'
+    NULL_IF = ('')
+    COMMENT = 'File format for ingesting data for zero to snowflake';
 
-ALTER TABLE dev.adhoc.count_test RENAME COLUMN v to value;
+SHOW FILE FORMATS IN DATABASE COMPANY_DB;
 
--- if I want to update NULL value to 100 in every records
-UPDATE dev.adhoc.count_test
-SET value = 100
-WHERE value is NULL;
+COPY INTO raw_data.company_metadata FROM @stage_company_metadata file_format=csv_company_metadata PATTERN = '.*csv.*' ON_ERROR = 'CONTINUE';
 
-DELETE FROM dev.adhoc.count_test WHERE value = 0;
 
--- DROP TABLE
-DROP TABLE dev.adhoc.count_test;
-SHOW TABLES IN SCHEMA dev.adhoc;
+CREATE SCHEMA dev_environment;
 
-CREATE OR REPLACE TABLE dev.adhoc.count_test (
-    value int
-);
+CREATE TABLE dev_environment.company_metadata_dev CLONE raw_data.company_metadata;
 
-INSERT INTO dev.adhoc.count_test VALUES 
-(NULL), (1), (1), (0), (0), (4), (3);
+SELECT * FROM dev_environment.company_metadata_dev LIMIT 10;
 
--- CASE WHEN
-SELECT
-    value,
-    CASE 
-        WHEN value > 0 THEN 'positive'
-        WHEN value = 0 THEN 'zero'
-        WHEN value < 0 THEN 'negative'
-        ELSE 'null'
-    END sign
-FROM dev.adhoc.count_test;
+SELECT 
+    TABLE_CATALOG,
+    TABLE_SCHEMA,
+    TABLE_NAME,
+    ID,
+    CLONE_GROUP_ID,
+    ACTIVE_BYTES
+FROM 
+    INFORMATION_SCHEMA.TABLE_STORAGE_METRICS WHERE TABLE_CATALOG='DEMO_DB';
 
--- COUNT function
-SELECT COUNT(1), COUNT(0), COUNT(NULL), COUNT(value), COUNT(DISTINCT value)
-FROM dev.adhoc.count_test;
+CREATE SCHEMA test_environment;
 
--- NULL
-SELECT COUNT(1)
-FROM dev.adhoc.count_test
-WHERE value = NULL; -- WHERE value != NULL
+CREATE TABLE test_environment.company_metadata_test CLONE raw_data.company_metadata;
 
-SELECT COUNT(1)
-FROM dev.adhoc.count_test
-WHERE value is NULL; -- WHERE value is not NULL
+select * from raw_data.company_metadata;
 
-SELECT 0 + NULL, 0 - NULL, 0 * NULL, 0/NULL;
+DROP TABLE company_metadata_test;
 
--- GROUP BY PREP
-CREATE TABLE IF NOT EXISTS dev.raw_data.user_session_channel (
-    userId int not NULL,
-    sessionId varchar(32) primary key,
-    channel varchar(32) default 'direct'  
-);
+SELECT * FROM company_metadata_test LIMIT 10;
 
-CREATE TABLE IF NOT EXISTS dev.raw_data.session_timestamp (
-    sessionId varchar(32) primary key,
-    ts timestamp  
-);
+UNDROP TABLE company_metadata_test;
 
--- for the following query to run, 
--- the S3 bucket should have LIST/READ privileges for everyone
-CREATE OR REPLACE STAGE dev.raw_data.blob_stage
-url = 's3://s3-geospatial/readonly/'
-file_format = (type = csv, skip_header = 1, field_optionally_enclosed_by = '"');
-
-COPY INTO dev.raw_data.user_session_channel
-FROM @dev.raw_data.blob_stage/user_session_channel.csv;
-
-COPY INTO dev.raw_data.session_timestamp
-FROM @dev.raw_data.blob_stage/session_timestamp.csv;
+UPDATE test_environment.company_metadata_test SET company_name = 'oops';
 
 SELECT *
-FROM dev.raw_data.session_timestamp
-LIMIT 10;
+FROM company_metadata_test;
 
--- GROUP BY 
-SELECT channel, COUNT(1) AS cnt
-FROM dev.raw_data.user_session_channel
-GROUP BY channel
-ORDER BY cnt DESC;
 
-SELECT channel, COUNT(1) AS cnt
-FROM dev.raw_data.user_session_channel
-GROUP BY 1
-ORDER BY 2 DESC;
+-- Set the session variable for the query_id
+SET query_id = (
+  SELECT query_id
+  FROM TABLE(information_schema.query_history_by_session(result_limit=>5))
+  WHERE query_text LIKE 'UPDATE%'
+  ORDER BY start_time DESC
+  LIMIT 1
+);
+
+-- 01b6fdeb-0002-e7ab-0000-ca7f0001d3be
+
+-- Use the session variable with the identifier syntax (e.g., $query_id)
+CREATE OR REPLACE TABLE test_environment.company_metadata_test AS
+SELECT *
+FROM test_environment.company_metadata_test
+BEFORE (STATEMENT => $query_id);
+
+-- Verify the company names have been restored
+SELECT *
+FROM test_environment.company_metadata_test;
