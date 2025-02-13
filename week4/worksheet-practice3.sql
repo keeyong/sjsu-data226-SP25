@@ -7,7 +7,7 @@ JOIN dev.raw.user_session_channel B ON A.sessionid = B.sessionid
 LIMIT 10;
 
 -- You can create a table with the above SELECT for easier use
-CREATE TABLE dev.analytics.session_summary AS
+CREATE OR REPLACE TABLE dev.analytics.session_summary AS
 SELECT B.*, A.ts 
 FROM dev.raw.session_timestamp A
 JOIN dev.raw.user_session_channel B ON A.sessionid = B.sessionid;
@@ -23,8 +23,8 @@ ORDER BY 1 DESC;
 -- CTE based MAU computation
 WITH tmp AS (
     SELECT B.*, A.ts
-    FROM raw.session_timestamp A
-    JOIN raw.user_session_channel B ON A.sessionid = B.sessionid
+    FROM dev.raw.session_timestamp A
+    JOIN dev.raw.user_session_channel B ON A.sessionid = B.sessionid
 )
 SELECT 
   LEFT(ts, 7) AS year_month,
@@ -39,9 +39,8 @@ SELECT
   COUNT(DISTINCT userid) AS mau
 FROM (
     SELECT B.*, A.ts
-    FROM raw.session_timestamp A
-    JOIN raw.user_session_channel B ON A.sessionid = B.sessionid
+    FROM dev.raw.session_timestamp A
+    JOIN dev.raw.user_session_channel B ON A.sessionid = B.sessionid
 )
 GROUP BY 1 
 ORDER BY 1 DESC;
-
