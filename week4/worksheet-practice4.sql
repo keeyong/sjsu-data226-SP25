@@ -36,24 +36,24 @@ SELECT 'elon', 'musk'
 UNION ALL
 SELECT 'mark', 'zuckerberg';
 
-SELECT sessionId FROM raw.user_session_channel
+SELECT sessionId FROM dev.raw.user_session_channel
 EXCEPT
-SELECT sessionId FROM raw.session_timestamp;
+SELECT sessionId FROM dev.raw.session_timestamp;
 
-SELECT sessionId FROM raw.user_session_channel
+SELECT sessionId FROM dev.raw.user_session_channel
 INTERSECT
-SELECT sessionId FROM raw.session_timestamp;
+SELECT sessionId FROM dev.raw.session_timestamp;
 
 -- ROW_NUMBER
 SELECT usc.userid, usc.channel, st.ts, ROW_NUMBER() OVER (PARTITION BY usc.userid ORDER BY st.ts) nn
-FROM raw.user_session_channel usc
-JOIN raw.session_timestamp st ON usc.sessionid = st.sessionid
+FROM dev.raw.user_session_channel usc
+JOIN dev.raw.session_timestamp st ON usc.sessionid = st.sessionid
 WHERE usc.userid = 27;
 
 -- LAG function
 SELECT usc.*, st.ts,
     LAG(channel,1) OVER (PARTITION BY userId ORDER BY ts) prev_channel
-FROM raw.user_session_channel usc
-JOIN raw.session_timestamp st ON usc.sessionid = st.sessionid
+FROM dev.raw.user_session_channel usc
+JOIN dev.raw.session_timestamp st ON usc.sessionid = st.sessionid
 WHERE usc.userid = 27
 ORDER BY usc.userid, st.ts;
