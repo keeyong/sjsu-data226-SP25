@@ -17,6 +17,7 @@ SELECT *
 FROM dev.adhoc.count_test;
 
 ALTER TABLE dev.adhoc.count_test RENAME COLUMN v to value;
+ALTER TABLE dev.adhoc.count_test RENAME COLUMN value to v;
 
 -- if I want to update NULL value to 100 in every records
 UPDATE dev.adhoc.count_test
