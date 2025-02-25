@@ -63,7 +63,7 @@ def load(cur, records, target_table):
 
 with DAG(
     dag_id = 'CountryCaptial',
-    start_date = datetime(2024,9,21),
+    start_date = datetime(2025,2,21),
     catchup=False,
     tags=['ETL'],
     schedule = '0 2 * * *'
