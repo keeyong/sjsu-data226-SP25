@@ -4,21 +4,21 @@ This will only 2 containers so it uses far less memory. After making sure the Do
 
 1. Clone the sjsu-data226 repo to the folder
 ```
-git clone https://github.com/keeyong/sjsu-data226.git
+git clone https://github.com/keeyong/sjsu-data226-SP25.git
 ```
-If you don't have git, you can just download it at https://github.com/keeyong/sjsu-data226/archive/refs/heads/main.zip. After unzipping it, you can follow the steps below
+If you don't have git, you can just download it at https://github.com/keeyong/sjsu-data226-SP25/archive/refs/heads/main.zip. After unzipping it, you can follow the steps below
 
-2. Change the current directory to sjsu-data226/week8/airflow
+2. Change the current directory to sjsu-data226-SP25/week6/airflow
 ```
-cd sjsu-data226/week8/airflow
+cd sjsu-data226-SP25/week6/airflow
 ```
 3. First initialize Airflow environment
 ```
-docker compose -f docker-compose-min.yaml up airflow-init
+docker compose -f docker-compose.yaml up airflow-init
 ```
 4. Next run the Airflow service
 ```
-docker compose -f docker-compose-min.yaml up
+docker compose -f docker-compose.yaml up
 ```
 5. Wait some time, then visit http://localhost:8081 and log in (Use ID:PW of airflow:airflow)
 
@@ -41,5 +41,5 @@ docker exec -it a9fc54d4b0b3 sh
 ```
 (airflow)airflow dags list
 (airflow)airflow tasks list HelloWorld
-(airflow)airflow dags test HelloWorld 2024-10-10
+(airflow)airflow dags test HelloWorld 2025-02-21
 ```
