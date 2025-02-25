@@ -8,9 +8,9 @@ git clone https://github.com/keeyong/sjsu-data226-SP25.git
 ```
 If you don't have git, you can just download it at https://github.com/keeyong/sjsu-data226-SP25/archive/refs/heads/main.zip. After unzipping it, you can follow the steps below
 
-2. Change the current directory to sjsu-data226-SP25/week6/airflow
+2. Change the current directory to sjsu-data226-SP25
 ```
-cd sjsu-data226-SP25/week6/airflow
+cd sjsu-data226-SP25/
 ```
 3. First initialize Airflow environment
 ```
