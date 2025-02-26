@@ -90,13 +90,13 @@ def predict(cur, forecast_function_name, train_input_table, forecast_table, fina
 
 with DAG(
     dag_id = 'TrainPredict',
-    start_date = datetime(2024,9,21),
+    start_date = datetime(2025,2,21),
     catchup=False,
     tags=['ML', 'ELT'],
     schedule = '30 2 * * *'
 ) as dag:
 
-    train_input_table = "dev.raw_data.market_data"
+    train_input_table = "dev.raw.market_data"
     train_view = "dev.adhoc.market_data_view"
     forecast_table = "dev.adhoc.market_data_forecast"
     forecast_function_name = "dev.analytics.predict_stock_price"
