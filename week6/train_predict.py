@@ -5,7 +5,7 @@ from airflow.decorators import task
 
 from datetime import timedelta
 from datetime import datetime
-import snowflake.connector
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 import requests
 
 
