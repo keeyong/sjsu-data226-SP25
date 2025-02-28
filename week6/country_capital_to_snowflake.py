@@ -46,7 +46,8 @@ def transform(text):
 def load(cur, records, target_table):
     try:
         cur.execute("BEGIN;")
-        cur.execute(f"CREATE OR REPLACE TABLE {target_table} (country varchar primary key, capital varchar);")
+        cur.execute(f"CREATE TABLE IF NOT EXISTS {target_table} (country varchar primary key, capital varchar);")
+        cur.execute(f"DELETE FROM {target_table}")
         for r in records:
             country = r[0].replace("'", "''")
             capital = r[1].replace("'", "''")
@@ -68,7 +69,7 @@ with DAG(
     tags=['ETL'],
     schedule = '0 2 * * *'
 ) as dag:
-    target_table = "dev.raw_data.country_capital"
+    target_table = "dev.raw.country_capital"
     url = Variable.get("country_capital_url")
     cur = return_snowflake_conn()
 
