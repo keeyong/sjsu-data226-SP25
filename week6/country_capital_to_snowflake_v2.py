@@ -36,7 +36,8 @@ def transform(text):
     return records[1:]
 
 @task
-def load(cur, records, target_table):
+def load(records, target_table):
+    cur = return_snowflake_conn()
     try:
         cur.execute("BEGIN;")
         cur.execute(f"CREATE TABLE IF NOT EXISTS {target_table} (country varchar primary key, capital varchar);")
@@ -62,10 +63,9 @@ with DAG(
     tags=['ETL'],
     schedule = '30 2 * * *'
 ) as dag:
-    target_table = "dev.raw_data.country_capital"
+    target_table = "dev.raw.country_capital"
     url = Variable.get("country_capital_url")
-    cur = return_snowflake_conn()
-
+    
     data = extract(url)
     lines = transform(data)
-    load(cur, lines, target_table)
+    load(lines, target_table)
