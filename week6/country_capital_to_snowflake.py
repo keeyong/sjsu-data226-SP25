@@ -43,7 +43,7 @@ def transform(text):
     return records[1:]
 
 @task
-def load(cur, records, target_table):
+def load(records, target_table):
     cur = return_snowflake_conn()
     try:
         cur.execute("BEGIN;")
