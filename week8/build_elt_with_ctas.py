@@ -29,7 +29,7 @@ def return_snowflake_conn():
 
 
 @task
-def run_ctas(table, select_sql, primary_key=None):
+def run_ctas(database, schema, table, select_sql, primary_key=None):
 
     logging.info(table)
     logging.info(select_sql)
@@ -37,14 +37,18 @@ def run_ctas(table, select_sql, primary_key=None):
     cur = return_snowflake_conn()
 
     try:
-        cur.execute("BEGIN;")
-        sql = f"CREATE TABLE {table} AS {select_sql}"
+        sql = f"CREATE TABLE {database}.{schema}.temp_{table} AS {select_sql}"
         logging.info(sql)
         cur.execute(sql)
 
         # do primary key uniquess check
         if primary_key is not None:
-            sql = f"SELECT {primary_key}, COUNT(1) AS cnt FROM {table} GROUP BY 1 ORDER BY 2 DESC LIMIT 1"
+            sql = f"""
+              SELECT {primary_key}, COUNT(1) AS cnt 
+              FROM {database}.{schema}.temp_{table}
+              GROUP BY 1
+              ORDER BY 2 DESC
+              LIMIT 1"""
             print(sql)
             cur.execute(sql)
             result = cur.fetchone()
@@ -53,10 +57,14 @@ def run_ctas(table, select_sql, primary_key=None):
                 print("!!!!!!!!!!!!!!")
                 raise Exception(f"Primary key uniqueness failed: {result}")
             
-        cur.execute("COMMIT;")
+        main_table_creation_if_not_exists_sql = f"""
+            CREATE TABLE IF NOT EXISTS {database}.{schema}.{table} AS
+            SELECT * FROM {database}.{schema}.temp_{table} WHERE 1=0;"""
+        cur.execute(main_table_creation_if_not_exists_sql)
+
+        swap_sql = f"""ALTER TABLE {database}.{schema}.{table} SWAP WITH {database}.{schema}.temp_{table};"""
+        cur.execute(swap_sql)
     except Exception as e:
-        cur.execute("ROLLBACK")
-        logging.error('Failed to sql. Completed ROLLBACK!')
         raise
 
 
@@ -68,10 +76,12 @@ with DAG(
     schedule = '45 2 * * *'
 ) as dag:
 
-    table = "dev.analytics.session_summary"
+    database = "dev"
+    schema = "analytics"
+    table = "session_summary"
     select_sql = """SELECT u.*, s.ts
     FROM dev.raw.user_session_channel u
     JOIN dev.raw.session_timestamp s ON u.sessionId=s.sessionId
     """
 
-    run_ctas(table, select_sql, primary_key='sessionId')
+    run_ctas(database, schema, table, select_sql, primary_key='sessionId')
