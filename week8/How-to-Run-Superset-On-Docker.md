@@ -2,15 +2,15 @@
 
 This will only 2 containers so it uses far less memory. After making sure the Docker Desktop is up and running, open a terminal (or CMD in the case of Windows) and move to a folder of your choice.
 
-1. Clone the sjsu-data226 repo to the folder
+1. Clone the sjsu-data226-SP25 repo to the folder
 ```
-git clone https://github.com/keeyong/sjsu-data226.git
+git clone https://github.com/keeyong/sjsu-data226-SP25.git
 ```
-If you don't have git, you can just download it at https://github.com/keeyong/sjsu-data226/archive/refs/heads/main.zip. After unzipping it, you can follow the steps below
+If you don't have git, you can just download it at https://github.com/keeyong/sjsu-data226-SP25/archive/refs/heads/main.zip. After unzipping it, you can follow the steps below
 
-2. Change the current directory to sjsu-data226/week9
+2. Change the current directory to sjsu-data226-SP25/week8
 ```
-cd sjsu-data226/week9
+cd sjsu-data226-SP25/week8
 ```
 
 3. Run Superset
@@ -38,4 +38,4 @@ Password:
 Repeat for confirmation:
 ```
 
-6. Wait some time, then visit http://localhost:8080 and log in (Use ID:PW you set up previously). Now you can set up database connection first, then add a dataset and create any charts you want
+6. Wait some time, then visit http://localhost:8088 and log in (Use ID:PW you set up previously). Now you can set up database connection first, then add a dataset and create any charts you want
