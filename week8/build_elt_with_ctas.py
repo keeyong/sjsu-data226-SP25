@@ -37,7 +37,7 @@ def run_ctas(database, schema, table, select_sql, primary_key=None):
     cur = return_snowflake_conn()
 
     try:
-        sql = f"CREATE TABLE {database}.{schema}.temp_{table} AS {select_sql}"
+        sql = f"CREATE OR REPLACE TABLE {database}.{schema}.temp_{table} AS {select_sql}"
         logging.info(sql)
         cur.execute(sql)
 
