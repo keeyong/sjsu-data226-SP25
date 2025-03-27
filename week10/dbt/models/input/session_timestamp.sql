@@ -1,4 +1,4 @@
 SELECT
     sessionId,
     ts
-FROM {{ source('raw_data', 'session_timestamp') }}
+FROM {{ source('raw', 'session_timestamp') }}
