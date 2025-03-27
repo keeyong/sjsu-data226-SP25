@@ -1,8 +1,8 @@
 version: 2
 
 sources:
-  - name: raw_data
-    database: dev
+  - name: raw
+    database: USER_DB_VIPER
     schema: raw_data
     description: "Schema which stores raw tables (ETL)"
     tables:
@@ -13,7 +13,7 @@ sources:
         identifier: session_timestamp
         description: "Session data including timestamp"
   - name: analytics
-    database: dev
+    database: USER_DB_VIPER
     schema: analytics
     description: "Schema with stores analytics tables (ELT)"
     tables:
