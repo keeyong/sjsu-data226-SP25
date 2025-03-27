@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: raw
     database: USER_DB_VIPER
-    schema: raw_data
+    schema: raw
     description: "Schema which stores raw tables (ETL)"
     tables:
       - name: user_session_channel
